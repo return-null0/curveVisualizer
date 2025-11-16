@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p ./public
           cp index.html ./public/
-          cp style.css ./public/ 2>/dev/null || true
+          cp styles.css ./public/ 2>/dev/null || true
           cp -r dist ./public/dist
 
       - name: Upload artifact
