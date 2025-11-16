@@ -1,0 +1,94 @@
+<head>
+  <meta charset="utf-8" />
+  <title>Space Curve Visualizer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div id="app">
+    <div id="leftPane">
+      <h1>Space Curve Visualizer</h1>
+
+      <div id="controls">
+        <label>
+          Preset:
+          <select id="curvePreset"></select>
+        </label>
+
+        <div class="control-row">
+          <label>x(t): <input id="xExpr" size="18" /></label>
+          <label>y(t): <input id="yExpr" size="18" /></label>
+          <label>z(t): <input id="zExpr" size="18" /></label>
+          <button id="applyCurve">Apply</button>
+        </div>
+      </div>
+
+      <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+
+    <aside id="statsPanel">
+      <h2>Stats</h2>
+
+      <section class="stat-section">
+        <h3>Parameter</h3>
+        <div class="stat-row">
+          <span class="stat-label">t</span>
+          <span id="stat-t" class="stat-value">–</span>
+        </div>
+      </section>
+
+      <section class="stat-section">
+        <h3>Position & Speed</h3>
+        <div class="stat-row">
+          <span class="stat-label">pos</span>
+          <span id="stat-pos" class="stat-value">–</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">|v|</span>
+          <span id="stat-speed" class="stat-value">–</span>
+        </div>
+      </section>
+
+      <section class="stat-section">
+        <h3>Frenet Frame</h3>
+        <div class="stat-row">
+          <span class="stat-label">κ (curvature)</span>
+          <span id="stat-kappa" class="stat-value">–</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">τ (torsion)</span>
+          <span id="stat-tau" class="stat-value">–</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label" style="color:ff0000;">Tangent</span>
+          <span id="stat-T" class="stat-value">–</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label" style="color:00ff00;">Normal</span>
+          <span id="stat-N" class="stat-value">–</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label" style="color:0000ff;">Binormal</span>
+          <span id="stat-B" class="stat-value">–</span>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+    <script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  }
+}
+</script>
+
+  <script type="module">
+    import { create, all } from "https://cdn.jsdelivr.net/npm/mathjs@11.11.0/+esm";
+    import { main } from "./dist/main.js";
+
+    const math = create(all, {});
+    main(math);
+  </script>
+</body>
