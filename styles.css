@@ -38,7 +38,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  min-width: 680px;
+  min-width: 680px; /* overridden on mobile */
 }
 
 h1 {
@@ -102,6 +102,9 @@ h1 {
 
 #canvas {
   display: block;
+  width: 100%;           /* responsive width */
+  max-width: 640px;      /* don’t blow up on large screens */
+  height: auto;          /* height controlled by JS resize */
   border-radius: 0.75rem;
   border: 1px solid var(--border-subtle);
   background: radial-gradient(circle at center, #ffffff 0%, #e4e7fb 70%);
@@ -109,8 +112,8 @@ h1 {
 }
 
 #statsPanel {
-  width: 320px;              /* fixed width */
-  flex: 0 0 320px;           /* don’t grow or shrink */
+  width: 320px;
+  flex: 0 0 320px;
   background: var(--bg-panel);
   border-radius: 0.9rem;
   border: 1px solid var(--border-subtle);
@@ -151,36 +154,99 @@ h1 {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
-  align-items: center;      
+  align-items: center;
   font-family: var(--font-mono);
   font-size: 0.78rem;
 }
-
-.stat-value {
-  color: var(--text-main);
-  text-align: right;
-  white-space: nowrap;      
-  min-width: 18ch;         
 
 .stat-label {
   color: var(--text-muted);
 }
 
+.stat-value {
+  color: var(--text-main);
+  text-align: right;
+  white-space: nowrap;
+  min-width: 18ch;
+}
 
-/* Slightly smaller on narrow screens */
+/* RESPONSIVE BREAKPOINTS */
+
+/* Tablet / small desktop */
 @media (max-width: 1000px) {
   #app {
     flex-direction: column;
     align-items: stretch;
+    padding: 1rem;
   }
 
   #leftPane {
-    min-width: auto;
+    min-width: 0;
   }
 
   #statsPanel {
-    width: 100%;         /* full width under canvas on small screens */
+    width: 100%;
     flex: 0 0 auto;
   }
+
+  #canvas {
+    max-width: 100%;
+  }
 }
+
+/* Phone */
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+  }
+
+  #app {
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+  }
+
+  #controls {
+    padding: 0.6rem 0.7rem;
+  }
+
+  #controls label {
+    font-size: 0.8rem;
+  }
+
+  #controls select,
+  #controls input {
+    font-size: 0.75rem;
+    width: 100%;          /* inputs full-width on mobile */
+  }
+
+  .control-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #canvas {
+    max-width: 100%;
+    border-radius: 0.6rem;
+  }
+
+  #statsPanel {
+    padding: 0.75rem 0.8rem;
+  }
+
+  .stat-section {
+    padding: 0.5rem 0.55rem;
+  }
+
+  .stat-row {
+    font-size: 0.72rem;
+    gap: 0.5rem;
+  }
+
+  .stat-value {
+    min-width: 0;         /* allow a bit more flex on tiny screens */
+  }
 }
