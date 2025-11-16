@@ -1,5 +1,23 @@
 {
   "scripts": {
     "build": "tsc"
+  },
+  "name": "curvevisualizer",
+  "version": "1.0.0",
+  "description": "*A Differential Geometry Playground for 3D Parametric Curves*",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/return-null0/curveVisualizer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/return-null0/curveVisualizer/issues"
+  },
+  "homepage": "https://github.com/return-null0/curveVisualizer#readme",
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }
