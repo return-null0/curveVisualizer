@@ -18,6 +18,6 @@
   },
   "homepage": "https://github.com/return-null0/curveVisualizer#readme",
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.0.0"
   }
 }
