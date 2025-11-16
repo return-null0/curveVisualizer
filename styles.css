@@ -169,6 +169,44 @@ h1 {
   white-space: nowrap;
   min-width: 18ch;
 }
+/* FOOTER */
+#footer {
+  width: 100%;
+  margin-top: 2rem;
+  padding: 1rem 0;
+  text-align: center;
+
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 28, 0.35),
+    transparent
+  );
+  color: var(--text-muted);
+
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  
+  border-top: 1px solid var(--border-subtle);
+}
+
+#footer span {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+#footer span:hover {
+  opacity: 1;
+}
+
+/* Mobile: slightly tighter spacing */
+@media (max-width: 600px) {
+  #footer {
+    margin-top: 1.5rem;
+    padding: 0.8rem 0;
+    font-size: 0.78rem;
+  }
+}
 
 /* RESPONSIVE BREAKPOINTS */
 
