@@ -1,7 +1,11 @@
 import type { CompiledCurve } from "./compileCurve.js";
 import type { CurveSamples, Vec3 } from "./curveTypes.js";
 
-export function sampleCurve(compiled: CompiledCurve, N: number): CurveSamples {
+export function sampleCurve(
+  compiled: CompiledCurve,
+  N: number,
+  morphValue: number = 1   // NEW
+): CurveSamples {
   const { tMin, tMax } = compiled.def;
 
   const t: number[] = [];
@@ -12,7 +16,8 @@ export function sampleCurve(compiled: CompiledCurve, N: number): CurveSamples {
 
   for (let i = 0; i < N; i++) {
     const ti = tMin + (i / (N - 1)) * (tMax - tMin);
-    const scope = { t: ti };
+
+    const scope = { t: ti, lambda: morphValue, λ: morphValue };
 
     t.push(ti);
 
@@ -42,7 +47,6 @@ export function sampleCurve(compiled: CompiledCurve, N: number): CurveSamples {
   }
 
   const s = computeArcLengths(r1);
-
   return { t, r, r1, r2, r3, s };
 }
 

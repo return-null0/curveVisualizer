@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>Space Curve Visualizer</title>
@@ -7,31 +9,25 @@
 
 <body>
   <div id="app">
-    <div id="leftPane">
-      <h1>Space Curve Visualizer</h1>
 
-      <div id="controls">
-        <label>
-          Preset:
-          <select id="curvePreset"></select>
-        </label>
-
-        <div class="control-row">
-          <label>x(t): <input id="xExpr" size="18" /></label>
-          <label>y(t): <input id="yExpr" size="18" /></label>
-          <label>z(t): <input id="zExpr" size="18" /></label>
-          <button id="applyCurve">Apply</button>
-        </div>
-      </div>
-
-      <canvas id="canvas" width="640" height="480"></canvas>
-    </div>
-
-    <aside id="statsPanel">
+    <!-- LEFT COLUMN: STATS -->
+    <aside id="statsPanel" class="sidePanel">
       <h2>Stats</h2>
 
       <section class="stat-section">
-        <h3>Parameter</h3>
+        <h3>Parameterization</h3>
+        <div class="stat-row">
+          <span class="stat-label">x(t) =</span>
+          <span id="stat-xexpr" class="stat-value">–</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">y(t) =</span>
+          <span id="stat-yexpr" class="stat-value">–</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">z(t) =</span>
+          <span id="stat-zexpr" class="stat-value">–</span>
+        </div>
         <div class="stat-row">
           <span class="stat-label">t</span>
           <span id="stat-t" class="stat-value">–</span>
@@ -53,37 +49,118 @@
       <section class="stat-section">
         <h3>Frenet Frame</h3>
         <div class="stat-row">
-          <span class="stat-label">κ (curvature)</span>
+          <span class="stat-label">κ</span>
           <span id="stat-kappa" class="stat-value">–</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label">τ (torsion)</span>
+          <span class="stat-label">τ</span>
           <span id="stat-tau" class="stat-value">–</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label" style="color:ff0000;">Tangent</span>
+          <span class="stat-label" style="color:#ff0000;">T</span>
           <span id="stat-T" class="stat-value">–</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label" style="color:00ff00;">Normal</span>
+          <span class="stat-label" style="color:#00cc00;">N</span>
           <span id="stat-N" class="stat-value">–</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label" style="color:0000ff;">Binormal</span>
+          <span class="stat-label" style="color:#0000ff;">B</span>
           <span id="stat-B" class="stat-value">–</span>
         </div>
       </section>
     </aside>
+
+    <!-- CENTER COLUMN: TITLE + CANVAS -->
+    <div id="leftPane">
+      <h1>Space Curve Visualizer</h1>
+      <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+
+    <!-- RIGHT COLUMN: CONTROLS + ERROR -->
+    <div id="rightPane">
+
+      <!-- CONTROLS PANEL -->
+      <div id="controlsPanel" class="sidePanel">
+        <h2>Controls</h2>
+
+        <section class="stat-section">
+          <h3>Parameterization</h3>
+          <div class="stat-row">
+            <span class="stat-label">x(t)</span>
+            <span class="stat-value">
+              <input id="xExpr" size="14" />
+            </span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">y(t)</span>
+            <span class="stat-value">
+              <input id="yExpr" size="14" />
+            </span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">z(t)</span>
+            <span class="stat-value">
+              <input id="zExpr" size="14" />
+            </span>
+          </div>
+        </section>
+
+        <section class="stat-section">
+          <h3>Preset</h3>
+          <div class="stat-row">
+            <span class="stat-label">Curve</span>
+            <span class="stat-value">
+              <select id="curvePreset"></select>
+            </span>
+          </div>
+        </section>
+
+        <section class="stat-section">
+          <h3>Playback Speed & Animation</h3>
+          <div class="stat-row">
+            <span class="stat-label">Speed</span>
+            <span class="stat-value">
+              <input id="speedSlider" type="range" min="0" max="5" step="0.1" value="1" />
+            </span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Morph (λ)</span>
+            <span class="stat-value">
+              <input id="morphSlider" type="range" min="0.1" max="3" step="0.1" value="1" />
+            </span>
+          </div>
+          <div class="stat-row" id="orientationRow" style="display:none;">
+  <span class="stat-label">Orient</span>
+  <span class="stat-value">
+    <input id="orientationSlider" type="range" min="-180" max="180" step="1" value="0" />
+  </span>
+</div>
+<div class="stat-row">
+  <span class="stat-label">Auto-rotate</span>
+  <span class="stat-value">
+    <input id="autoRotate" type="checkbox" checked />
+  </span>
+</div>
+        </section>
+      </div>
+
+      <!-- ERROR BANNER -->
+      <div id="errorBanner" class="error-banner" style="display:none;">
+        <span id="errorText">Invalid curve expression.</span>
+      </div>
+
+    </div>
   </div>
 
-    <script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
   }
-}
-</script>
+  </script>
 
   <script type="module">
     import { create, all } from "https://cdn.jsdelivr.net/npm/mathjs@11.11.0/+esm";
@@ -92,7 +169,9 @@
     const math = create(all, {});
     main(math);
   </script>
+
   <footer id="footer">
-  <span>© 2025 Renaldo Hyacinthe. All rights reserved.</span>
-</footer>
+    <span>© 2025 Renaldo Hyacinthe. All rights reserved.</span>
+  </footer>
 </body>
+</html>
