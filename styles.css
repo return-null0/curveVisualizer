@@ -135,7 +135,6 @@ h1 {
   color: var(--text-main);
   text-align: right;
   white-space: nowrap;
-  min-width: 14ch;
 }
 
 /* Controls inputs (inside stat-value spans) */
