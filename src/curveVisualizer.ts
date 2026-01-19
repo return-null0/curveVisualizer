@@ -222,7 +222,6 @@ export function runCurveVisualizer(math: any) {
       // pass morphValue (λ) into sampling
       samples = sampleCurve(compiled, 400, morphValue) as CurveSamples;
       frames = computeFrenetFrames(samples) as FrenetFrame[];
-      console.log("Frenet sample[0]:", frames[0]);
 
       // curve line
       const pts = samples.r.map((p: Vec3) => new THREE.Vector3(p.x, p.y, p.z));
