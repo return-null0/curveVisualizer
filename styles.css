@@ -94,8 +94,7 @@ body {
 
 #statsPanel,
 #controlsPanel {
-  width: 400px;
-  flex: 0 0 400px;
+  flex: 0 0 260px;
 }
 
 #leftPane {
