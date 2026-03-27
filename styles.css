@@ -199,7 +199,7 @@ h1 {
 }
 
 #curvePreset {
-  width: 80%;
+  width: 70%;
 }
 
 /* --- Canvas --- */
@@ -336,7 +336,4 @@ h1 {
     align-items: flex-start;
   }
 
-  .stat-value {
-    text-align: left;
-  }
 }
