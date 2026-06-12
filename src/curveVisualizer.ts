@@ -7,6 +7,14 @@ import type { CurveDefinition, CurveSamples, Vec3 } from "./curveTypes.js";
 import * as THREE from "three";
 // @ts-ignore
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+// @ts-ignore
+import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+// @ts-ignore
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+// @ts-ignore
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+// @ts-ignore
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
 type FrenetFrame = {
   T: Vec3;
@@ -16,17 +24,51 @@ type FrenetFrame = {
   torsion?: number;   
 };
 
-export function runCurveVisualizer(math: any) {
+export function runCurveVisualizer(math: unknown) {
   let lastStatsUpdate = 0;
   const statsUpdateInterval = 100; 
 
   const presets: CurveDefinition[] = [
-    { name: "Helix", xExpr: "cos(t)", yExpr: "sin(t)", zExpr: "lambda * t / (2*pi)", tMin: 0, tMax: 6 * Math.PI },
-    { name: "Circle in XY", xExpr: "lambda * cos(t)", yExpr: "lambda * sin(t)", zExpr: "0", tMin: 0, tMax: 2 * Math.PI },
-    { name: "Parabola in XZ", xExpr: "t", yExpr: "0", zExpr: "lambda * (t^2 / 4)", tMin: -4, tMax: 4 },
-    { name: "Twisted Cubic", xExpr: "t", yExpr: "lambda * t^2", zExpr: "t^3 / 4", tMin: -2, tMax: 2 },
-    { name: "3D Sine Wave", xExpr: "t", yExpr: "lambda * sin(t)", zExpr: "lambda * cos(t)", tMin: -4 * Math.PI, tMax: 4 * Math.PI },
-    { name: "Figure-8 Lissajous", xExpr: "lambda * cos(t)", yExpr: "lambda * sin(2*t)", zExpr: "0.3 * lambda * sin(t)", tMin: 0, tMax: 2 * Math.PI },
+    {
+      name: "Standard Helix",
+      xExpr: "cos(t)",
+      yExpr: "sin(t)",
+      zExpr: "lambda * t / (2*pi)",
+      tMin: -4 * Math.PI,
+      tMax: 4 * Math.PI,
+    },
+    {
+      name: "Twisted Cubic",
+      xExpr: "t",
+      yExpr: "lambda * t^2",
+      zExpr: "t^3 / 4",
+      tMin: -2.5,
+      tMax: 2.5,
+    },
+    {
+      name: "Viviani's Curve",
+      xExpr: "lambda * (1 + cos(t))",
+      yExpr: "lambda * sin(t)",
+      zExpr: "2 * lambda * sin(t/2)",
+      tMin: -2 * Math.PI,
+      tMax: 2 * Math.PI,
+    },
+    {
+      name: "Trefoil Knot",
+      xExpr: "sin(t) + 2*sin(2*t)",
+      yExpr: "cos(t) - 2*cos(2*t)",
+      zExpr: "-lambda * sin(3*t)",
+      tMin: 0,
+      tMax: 2 * Math.PI,
+    },
+    {
+      name: "Torus Knot (3, 4)",
+      xExpr: "(2 + cos(3*t)) * cos(4*t)",
+      yExpr: "(2 + cos(3*t)) * sin(4*t)",
+      zExpr: "lambda * sin(3*t)",
+      tMin: 0,
+      tMax: 2 * Math.PI,
+    }
   ];
 
   const canvasEl = document.getElementById("canvas") as HTMLCanvasElement | null;
@@ -46,6 +88,7 @@ export function runCurveVisualizer(math: any) {
 
   const morphSlider = document.getElementById("morphSlider") as HTMLInputElement | null;
   const speedSlider = document.getElementById("speedSlider") as HTMLInputElement | null;
+  const exportBtn = document.getElementById("exportBtn") as HTMLButtonElement | null;
 
   const statXExpr = document.getElementById("stat-xexpr");
   const statYExpr = document.getElementById("stat-yexpr");
@@ -58,12 +101,13 @@ export function runCurveVisualizer(math: any) {
   const canvas: HTMLCanvasElement = canvasEl;
 
   // Render Setup
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setSize(canvas.width, canvas.height, false);
   renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.toneMapping = THREE.ReinhardToneMapping;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0d1117); 
+  scene.background = null; 
 
   const camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 0.1, 100);
   camera.position.set(4, 4, 8);
@@ -72,18 +116,28 @@ export function runCurveVisualizer(math: any) {
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
 
-  // Environment Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
   scene.add(ambientLight);
-  const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
   dirLight.position.set(10, 20, 10);
   scene.add(dirLight);
 
-  // Grid & Axes
-  const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+  const gridHelper = new THREE.GridHelper(20, 20, 0x333344, 0x1a1a24);
   scene.add(gridHelper);
   const axes = new THREE.AxesHelper(3);
   scene.add(axes);
+
+  const renderScene = new RenderPass(scene, camera);
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.2,  // Bloom strength
+    0.3,  // Bloom radius
+    0.6   // Bloom threshold (lower means more things glow)
+  );
+
+  const composer = new EffectComposer(renderer);
+  composer.addPass(renderScene);
+  composer.addPass(bloomPass);
 
   let currentDef: CurveDefinition = presets[0];
   let samples!: CurveSamples;
@@ -134,18 +188,20 @@ export function runCurveVisualizer(math: any) {
 
     try {
       clearError();
-      const compiled = compileCurve(math, def);
+      const compiled = compileCurve(math as any, def);
       samples = sampleCurve(compiled, 400, morphValue) as CurveSamples;
       frames = computeFrenetFrames(samples) as FrenetFrame[];
 
       const pts = samples.r.map((p: Vec3) => new THREE.Vector3(p.x, p.y, p.z));
-      
       const path = new THREE.CatmullRomCurve3(pts);
       const geom = new THREE.TubeGeometry(path, 400, 0.06, 8, false);
+      
       const mat = new THREE.MeshStandardMaterial({ 
         color: 0x0fd3b5, 
-        roughness: 0.2, 
-        metalness: 0.5 
+        emissive: 0x0fd3b5,
+        emissiveIntensity: 0.8,
+        roughness: 0.1, 
+        metalness: 0.8 
       });
 
       if (curveMesh) scene.remove(curveMesh);
@@ -154,7 +210,11 @@ export function runCurveVisualizer(math: any) {
 
       if (!marker) {
         const sphereGeom = new THREE.SphereGeometry(0.12, 32, 32);
-        const sphereMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x444444 });
+        const sphereMat = new THREE.MeshStandardMaterial({ 
+          color: 0xffffff, 
+          emissive: 0xffffff,
+          emissiveIntensity: 0.6
+        });
         marker = new THREE.Mesh(sphereGeom, sphereMat);
         scene.add(marker);
       }
@@ -169,25 +229,28 @@ export function runCurveVisualizer(math: any) {
           scene.add(arrow);
         }
       }
+      
       idx = 0;
-    } catch (err: any) {
-      console.error("Error building curve:", err);
-      showError("Invalid curve expression: " + (err?.message ?? String(err)));
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error("Error building curve:", errorMessage);
+      showError("Invalid curve expression: " + errorMessage);
       if (curveMesh) { scene.remove(curveMesh); curveMesh = null; }
     }
   }
 
   function updateStatsUI(k: number) {
+    if (!samples || !frames) return;
     const p = samples.r[k] as Vec3;
     const f = frames[k] ?? ({} as FrenetFrame);
     const T = f.T ?? { x: 1, y: 0, z: 0 };
     const N = f.N ?? { x: 0, y: 1, z: 0 };
     const B = f.B ?? { x: 0, y: 0, z: 1 };
     
-    const v = (samples as any).r1 ? ((samples as any).r1[k] as Vec3) : undefined;
+    const typedSamples = samples as unknown as { r1?: Vec3[], t?: number[] };
+    const v = typedSamples.r1 ? typedSamples.r1[k] : undefined;
     const speed = v != null ? Math.hypot(v.x, v.y, v.z) : undefined;
-    const tArr = (samples as any).t as number[] | undefined;
-    const tVal = tArr ? tArr[k] : undefined;
+    const tVal = typedSamples.t ? typedSamples.t[k] : undefined;
 
     const fmtVec = (u: Vec3) => `(${u.x.toFixed(2)}, ${u.y.toFixed(2)}, ${u.z.toFixed(2)})`;
 
@@ -202,6 +265,7 @@ export function runCurveVisualizer(math: any) {
   }
 
   function updateFrenetArrows(i: number) {
+    if (!samples || !frames) return;
     const p = samples.r[i] as Vec3;
     const f = frames[i] ?? ({} as FrenetFrame);
     const dirs = [
@@ -212,11 +276,13 @@ export function runCurveVisualizer(math: any) {
 
     for (let j = 0; j < 3; j++) {
       const arrow = frameArrows[j];
-      arrow.position.set(p.x, p.y, p.z);
-      const dirVec = new THREE.Vector3(dirs[j].x, dirs[j].y, dirs[j].z);
-      if (dirVec.lengthSq() < 1e-8) dirVec.set(1, 0, 0);
-      dirVec.normalize();
-      arrow.setDirection(dirVec);
+      if (arrow) {
+        arrow.position.set(p.x, p.y, p.z);
+        const dirVec = new THREE.Vector3(dirs[j].x, dirs[j].y, dirs[j].z);
+        if (dirVec.lengthSq() < 1e-8) dirVec.set(1, 0, 0);
+        dirVec.normalize();
+        arrow.setDirection(dirVec);
+      }
     }
   }
 
@@ -237,6 +303,8 @@ export function runCurveVisualizer(math: any) {
     const height = canvas.clientHeight || canvas.height;
     if (canvas.width !== width || canvas.height !== height) {
       renderer.setSize(width, height, false);
+      // Synchronize the composer sizing with the renderer
+      composer.setSize(width, height);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
     }
@@ -260,6 +328,38 @@ export function runCurveVisualizer(math: any) {
     buildCurve(currentDef);
   });
 
+  if (exportBtn) {
+    exportBtn.addEventListener("click", () => {
+      const exporter = new GLTFExporter();
+      const exportScene = new THREE.Scene();
+      
+      if (curveMesh) exportScene.add(curveMesh.clone());
+
+      exporter.parse(
+        exportScene,
+        (result: unknown) => {
+          const gltfBuffer = result as ArrayBuffer; 
+          const blob = new Blob([gltfBuffer], { type: "application/octet-stream" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.style.display = "none";
+          link.href = url;
+          link.download = `${currentDef.name.replace(/\s+/g, "_")}_curve.glb`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        },
+        (error: unknown) => {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.error("An error happened during export:", errorMessage);
+          showError("Export failed.");
+        },
+        { binary: true }
+      );
+    });
+  }
+
   buildCurve(presets[0]);
 
   function animate() {
@@ -267,11 +367,12 @@ export function runCurveVisualizer(math: any) {
     resizeRendererToDisplaySize();
     controls.update(); 
 
-    if (samples && samples.r.length > 0) {
+    if (samples && samples.r && samples.r.length > 0) {
       idx = (idx + playbackSpeed) % samples.r.length;
       updateFrameAt(Math.floor(idx));
     }
-    renderer.render(scene, camera);
+    
+    composer.render();
   }
   animate();
 }
