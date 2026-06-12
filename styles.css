@@ -54,7 +54,6 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  border-bottom: 1px solid var(--border-glow);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
@@ -91,9 +90,8 @@ body {
 
 /* --- Layout Main --- */
 #app {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+display: grid;
+  grid-template-columns: 280px 1fr 280px; /* Forces specific column widths */
   gap: 2rem;
   padding: 6.5rem 2rem 2rem;
   max-width: 1400px;
@@ -352,8 +350,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* --- Media Queries --- */
 @media (max-width: 1100px) {
-  #app {
-    flex-wrap: wrap;
+#app {
+    grid-template-columns: 1fr; 
+    padding: 6rem 1rem 1rem;
   }
   
   #leftPane {
@@ -373,10 +372,14 @@ input[type="range"]::-webkit-slider-thumb:hover {
   
   #app {
     padding: 6rem 1rem 1rem;
-    gap: 1rem;
+    gap: 1.5rem;
   }
   
-  #statsPanel, #controlsPanel {
+  #statsPanel, 
+  #controlsPanel {
     flex: 1 1 100%;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
